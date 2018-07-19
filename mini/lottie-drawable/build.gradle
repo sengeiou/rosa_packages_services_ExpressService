@@ -1,0 +1,49 @@
+apply plugin: 'com.android.library'
+apply from: 'gradle-mvn-push.gradle'
+
+android {
+  compileSdkVersion versions.compileSdk
+  buildToolsVersion versions.buildTools
+  resourcePrefix 'lottie_'
+
+  defaultConfig {
+    minSdkVersion versions.minSdk
+    targetSdkVersion versions.targetSdk
+    versionCode 100
+    versionName "2.5.0-beta1"
+  }
+  lintOptions {
+    abortOnError true
+    textReport true
+    textOutput 'stdout'
+  }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+  testOptions {
+    unitTests {
+      //includeAndroidResources = true
+    }
+  }
+}
+
+dependencies {
+  compileOnly "com.android.support:support-annotations:$versions.androidSupport"
+  testImplementation "org.mockito:mockito-core:2.15.0"
+  compileOnly project(path: ':mini:mini-spi')
+  compileOnly (deps.utillib){
+    exclude group: 'com.google.code.gson', module: 'gson'
+    exclude group: 'com.google.guava', module: 'guava'
+  }
+  testImplementation 'junit:junit:4.12'
+  testImplementation "org.robolectric:robolectric:3.5.1"
+  testImplementation project(path: ':mini:mini-spi')
+  compileOnly deps.properties_sdk
+}
+
+task javadoc(type: Javadoc) {
+  source = android.sourceSets.main.java.srcDirs
+  classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+  failOnError false
+}

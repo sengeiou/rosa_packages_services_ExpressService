@@ -1,0 +1,10 @@
+syntax = "proto3";
+option java_package = "com.ubtrobot.express.protos";
+
+//请求参数
+message DoProgressExpressReq {
+    string name = 1;
+    int32 status = 2;
+    int32 progress = 3;
+    bool animated = 4;
+}

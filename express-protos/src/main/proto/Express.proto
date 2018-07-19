@@ -1,0 +1,38 @@
+syntax = "proto3";
+option java_package = "com.ubtrobot.express.protos";
+
+//响应参数
+message ExpressListRes {
+    repeated ExpressInfo express = 1;
+}
+
+message ExpressInfo {
+    int32 id = 1; //id
+    string name = 2; //名称
+    int32 duration = 3; //时长
+    int32 frames = 5; //帧数
+    ExpressFormat format = 4;
+    int32 intrinsicWidth = 6; //图片宽度
+    bool customize = 7;//客制化
+}
+
+//请求参数
+message DoExpressReq {
+    string name = 1;
+    float speed = 2;
+    int32 repeat = 3;
+    bool tweenable = 4;
+    bool customize = 5;//客制化
+}
+
+message SetFrameReq {
+    string name = 1; //名字
+    int32 frame = 2; //帧
+}
+
+enum ExpressFormat {
+    GIF = 0;
+    PNG = 1;
+    JSON = 2;
+    CODE_DRAW=3;
+}

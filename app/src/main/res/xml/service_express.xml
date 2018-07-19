@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service name="express">
+  <call path="/getExpressList"/>
+  <call path="/doExpress"/>
+  <call path="/doExpressStickily"/>
+  <call path="/setExpressFrame"/>
+  <call path="/doExpressTween"/>
+  <call path="/doProgressExpress"/>
+</service>

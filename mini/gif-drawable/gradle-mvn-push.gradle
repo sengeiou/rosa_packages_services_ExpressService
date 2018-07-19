@@ -1,0 +1,79 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+afterEvaluate { project ->
+  uploadArchives {
+    repositories {
+      mavenDeployer {
+        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+        pom.groupId = GROUP
+        pom.artifactId = POM_ARTIFACT_ID
+        if (rootProject.ext.snapshot) {
+          pom.version = VERSION_NAME + "-SNAPSHOT"
+        } else {
+          pom.version = VERSION_NAME
+        }
+
+        snapshotRepository(url: uri("${artifactory_url}/${artifactory_alpha_snapshot}")) {
+          authentication(userName: "${artifactory_username}", password: "${artifactory_password}")
+        }
+
+        repository(url: uri("${artifactory_url}/${artifactory_alpha_release}")) {
+          authentication(userName: "${artifactory_username}", password: "${artifactory_password}")
+        }
+
+        pom.project {
+          name POM_NAME
+          packaging POM_PACKAGING
+          description POM_DESCRIPTION
+          if (rootProject.ext.snapshot) {
+            url "${artifactory_url}/${artifactory_alpha_snapshot}"
+          } else {
+            url "${artifactory_url}/${artifactory_alpha_release}"
+          }
+
+          developers {
+            developer {
+              id POM_DEVELOPER_ID
+              name POM_DEVELOPER_NAME
+            }
+          }
+        }
+      }
+    }
+  }
+
+  signing {
+    required { !rootProject.ext.snapshot && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+  }
+
+  task androidJavadocs(type: Javadoc) {
+    android.libraryVariants.all { variant ->
+      source = variant.javaCompile.source
+      classpath = files(variant.javaCompile.classpath.files, android.getBootClasspath())
+      options {
+        links "http://docs.oracle.com/javase/7/docs/api/"
+        linksOffline "http://d.android.com/reference", "${android.sdkDirectory}/docs/reference"
+      }
+      exclude '**/R.java'
+      exclude '**/BuildConfig.java'
+    }
+  }
+
+  task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    classifier = 'javadoc'
+    from androidJavadocs.destinationDir
+  }
+
+  task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.sourceFiles
+  }
+
+  artifacts {
+    archives androidSourcesJar
+    archives androidJavadocsJar
+  }
+}

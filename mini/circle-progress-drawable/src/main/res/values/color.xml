@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="light_blue_color">#D2DCE6</color>
+
+    <color name="ring_blue_start_color">#102397</color>
+
+    <color name="ring_blue_end_color">#187ADF</color>
+
+    <color name="text_blue_color">#7887A7</color>
+
+    <color name="flash_blue_color">#D2DCE6</color>
+
+
+    <color name="ring_green_start_color">#4BAF02</color>
+
+    <color name="ring_green_end_color">#65E400</color>
+
+    <color name="text_green_color">#3C8B00</color>
+
+    <color name="ring_green_tail1_color">#65D400</color>
+
+    <color name="ring_green_tail2_color">#65F400</color>
+</resources>

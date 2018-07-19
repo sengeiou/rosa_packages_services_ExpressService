@@ -1,0 +1,148 @@
+apply plugin: 'com.android.library'
+
+
+def deps = rootProject.ext.deps
+def ext_android = rootProject.ext.android
+
+android {
+  compileSdkVersion ext_android.compileSdkVersion
+  buildToolsVersion ext_android.buildToolsVersion
+
+  defaultConfig {
+    minSdkVersion ext_android.minSdkVersion
+    targetSdkVersion ext_android.targetSdkVersion
+    versionCode 1
+    versionName "1.0"
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+  }
+  lintOptions {
+    abortOnError false
+    ignoreWarnings true
+  }
+}
+
+dependencies {
+  implementation fileTree(include: ['*.jar'], dir: 'libs')
+  compileOnly deps.supportAnnotations
+  testImplementation deps.junit
+  //调试
+  implementation deps.servicecommon
+  implementation deps.protobufparam
+  implementation deps.actionhelper
+  implementation project(':express-protos')
+}
+
+apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'maven-publish'
+
+def group = 'com.ubtrobot.lib.packets'
+def libraryVersion = rootProject.ext.express.versionName
+def baseName = project.getName()
+
+task jarSdk(type: Jar,
+    dependsOn: [':express-protos:assembleRelease',
+                ':express-sdk:assembleRelease']) {
+  archiveName = "${baseName}-${libraryVersion}.jar"
+
+  //需打包的资源所在的路径集
+  def srcClassDir = [project.buildDir.absolutePath + "/intermediates/classes/release",
+                     project.buildDir.absolutePath +
+                         "/../../express-protos/build/intermediates/classes/release"]
+  //初始化资源路径集
+  from srcClassDir
+
+  exclude "**/BuildConfig.class"
+  exclude "**/R.class"
+  exclude "**/BuildConfig\$*.class"
+  exclude "**/R\$*.class"
+
+  //只导入资源路径集下的部分资源
+  include "com/ubtrobot/express/**"
+}
+
+task androidJavadocs(type: Javadoc) {
+  android.libraryVariants.all { variant ->
+    source = variant.javaCompile.source
+    //classpath = files(variant.javaCompile.classpath.files, android.getBootClasspath())
+    doFirst {
+      classpath = files(variant.javaCompile.classpath.files,
+          project.android.getBootClasspath())
+    }
+    options {
+      links "http://docs.oracle.com/javase/7/docs/api/"
+      linksOffline "http://d.android.com/reference", "${android.sdkDirectory}/docs/reference"
+    }
+    exclude '**/R.java'
+    exclude '**/BuildConfig.java'
+    doLast {
+      copy {
+        from "src/main/javadoc"
+        into "$buildDir/docs/javadoc"
+      }
+    }
+  }
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+  classifier = 'javadoc'
+  from androidJavadocs.destinationDir
+}
+
+task androidSourcesJar(type: Jar) {
+  classifier = 'sources'
+  from android.sourceSets.main.java.sourceFiles
+}
+
+tasks.withType(JavaCompile) {
+  options.encoding = "UTF-8"
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      groupId group
+      artifactId baseName
+      if (rootProject.ext.snapshot) {
+        version = libraryVersion + "-SNAPSHOT"
+      } else {
+        version libraryVersion
+      }
+
+      artifacts {
+        artifact("build/libs/${baseName}-${libraryVersion}.jar")
+        artifact(androidSourcesJar)
+        artifact(androidJavadocsJar)
+      }
+    }
+  }
+}
+
+artifactory {
+  contextUrl = artifactory_url
+
+  publish {
+    repository {
+      if (rootProject.ext.snapshot) {
+        repoKey = artifactory_rose_snapshot
+      } else {
+        repoKey = artifactory_rose_release
+      }
+      username = artifactory_username
+      password = artifactory_password
+    }
+
+    defaults {
+      publications('mavenJava')
+      publishArtifacts = true
+    }
+  }
+
+  resolve {
+    repoKey = 'jcenter'
+  }
+}

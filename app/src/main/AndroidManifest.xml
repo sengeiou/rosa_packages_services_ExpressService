@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.ubtrobot.service">
+  <!--android:sharedUserId="android.uid.system"-->
+  <uses-permission android:name="com.ubtrobot.master.permission.MASTER"/>
+  <uses-permission android:name="com.ubtrobot.master.permission.MASTER_SYSTEM_SERVICE"/>
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+  <application
+      android:name=".app.ExpressApplication"
+      android:allowBackup="true"
+      android:fullBackupContent="@xml/backup_descriptor"
+      android:icon="@mipmap/ic_launcher"
+      android:label="@string/app_name"
+      android:largeHeap="true"
+      android:roundIcon="@mipmap/ic_launcher_round"
+      android:supportsRtl="true"
+      android:theme="@style/AppTheme"
+      tools:ignore="GoogleAppIndexingWarning">
+    <activity
+        android:name="com.ubtrobot.service.MainActivity"
+        android:launchMode="singleInstance"
+        android:screenOrientation="portrait">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="${CATEGORY}"/>
+      </intent-filter>
+    </activity>
+    <service
+        android:name=".ExpressService"
+        android:exported="true">
+      <meta-data
+          android:name="master.service"
+          android:resource="@xml/service_express"/>
+    </service>
+    <!--<receiver android:name=".receiver.ExpressScanReceiver">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED"/>
+        <action android:name="android.intent.action.MEDIA_MOUNTED"/>
+        <action android:name="com.ubtrobot.service.action.SCAN_EXPRESS"/>
+      </intent-filter>
+    </receiver>-->
+  </application>
+
+</manifest>
